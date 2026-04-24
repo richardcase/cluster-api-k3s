@@ -194,7 +194,7 @@ func (c *ControlPlane) FailureDomainWithMostMachines(ctx context.Context, machin
 	// See if there are any Machines that are not in currently defined failure domains first.
 	notInFailureDomains := machines.Filter(
 		collections.Not(collections.InFailureDomains(c.FailureDomainNames()...)),
-		collections.Not(FilterControlPlane()),
+		FilterControlPlane(),
 	)
 	if len(notInFailureDomains) > 0 {
 		// return the failure domain for the oldest Machine not in the current list of failure domains

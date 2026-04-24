@@ -60,14 +60,14 @@ var _ = Describe("When testing clusterctl upgrades using ClusterClass (v0.2.0=>c
 	BeforeEach(func() {
 		Expect(e2eConfig.Variables).To(HaveKey(K3sCapiCurrentVersion))
 		Expect(e2eConfig.Variables).To(HaveKey(CapiCoreVersion))
+		Expect(e2eConfig.Variables).To(HaveKey(CapiCoreCurrentVersion))
 
 		// Will upgrade k3s CAPI from v0.2.0 to k3sCapiUpgradedVersion.
 		k3sCapiUpgradedVersion = e2eConfig.GetVariableOrEmpty(K3sCapiCurrentVersion)
 
-		// Will init other CAPI core/CAPD componenets with CapiCoreVersion, and then upgrade to CapiCoreUpgradedVersion.
-		// For now, this two versions are equal.
+		// Will init CAPI core/CAPD with CapiCoreVersion, then upgrade to CapiCoreUpgradedVersion.
 		capiCoreVersion = e2eConfig.GetVariableOrEmpty(CapiCoreVersion)
-		capiCoreUpgradedVersion = capiCoreVersion
+		capiCoreUpgradedVersion = e2eConfig.GetVariableOrEmpty(CapiCoreCurrentVersion)
 	})
 
 	capi_e2e.ClusterctlUpgradeSpec(ctx, func() capi_e2e.ClusterctlUpgradeSpecInput {

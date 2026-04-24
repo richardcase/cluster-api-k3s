@@ -371,12 +371,6 @@ func aggregateFromMachinesToKCP(input aggregateFromMachinesToKCPInput) {
 		return
 	}
 
-	// In case of no errors and at least one machine with warnings, report false, warnings.
-	if len(kcpMachinesWithInfo) > 0 {
-		v1beta1conditions.MarkFalse(input.controlPlane.KCP, input.condition, input.unhealthyReason, clusterv1beta1.ConditionSeverityWarning, "Following machines are reporting %s warnings: %s", input.note, strings.Join(kcpMachinesWithInfo.List(), ", "))
-		return
-	}
-
 	// In case of no errors, no warning, and at least one machine with info, report false, info.
 	if len(kcpMachinesWithInfo) > 0 {
 		v1beta1conditions.MarkFalse(input.controlPlane.KCP, input.condition, input.unhealthyReason, clusterv1beta1.ConditionSeverityWarning, "Following machines are reporting %s info: %s", input.note, strings.Join(kcpMachinesWithInfo.List(), ", "))

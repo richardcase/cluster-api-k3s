@@ -24,6 +24,15 @@ providers:
         replacements:
           - old: "imagePullPolicy: Always"
             new: "imagePullPolicy: IfNotPresent"
+      - name: v1.10.1
+        value: https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.10.1/core-components.yaml
+        type: url
+        contract: v1beta1
+        files:
+          - sourcePath: "../data/shared/v1beta1/metadata.yaml"
+        replacements:
+          - old: "imagePullPolicy: Always"
+            new: "imagePullPolicy: IfNotPresent"
   - name: docker
     type: InfrastructureProvider
     versions:
@@ -38,6 +47,15 @@ providers:
         replacements:
           - old: "imagePullPolicy: Always"
             new: "imagePullPolicy: IfNotPresent"
+      - name: v1.10.1 # used during clusterctl upgrade test
+        value: https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.10.1/infrastructure-components-development.yaml
+        type: url
+        contract: v1beta1
+        files:
+          - sourcePath: "../data/shared/v1beta1/metadata.yaml"
+        replacements:
+          - old: "imagePullPolicy: Always"
+            new: "imagePullPolicy: IfNotPresent"
     files:
       - sourcePath: "../data/infrastructure-docker/cluster-template.yaml"
       - sourcePath: "../data/infrastructure-docker/cluster-template-kcp-remediation.yaml"
@@ -45,6 +63,7 @@ providers:
       - sourcePath: "../data/infrastructure-docker/cluster-template-v1beta1.yaml"
       - sourcePath: "../data/infrastructure-docker/cluster-template-topology.yaml"
       - sourcePath: "../data/infrastructure-docker/clusterclass-k3s.yaml"
+
   - name: k3s
     type: BootstrapProvider
     versions:
@@ -99,7 +118,8 @@ variables:
   IP_FAMILY: "IPv4"
   KIND_IMAGE_VERSION: "v1.33.0"
   # Used during clusterctl upgrade test
-  CAPI_CORE_VERSION: "1.11.5"
+  CAPI_CORE_VERSION: "1.10.1"
+  CAPI_CORE_CURRENT_VERSION: "1.11.5"
   K3S_CAPI_CURRENT_VERSION: "0.3.99"
   # Enabling the feature flags by setting the env variables.
   CLUSTER_TOPOLOGY: "true"
