@@ -44,6 +44,7 @@ const (
 	IPFamily                        = "IP_FAMILY"
 	KindImageVersion                = "KIND_IMAGE_VERSION"
 	CapiCoreVersion                 = "CAPI_CORE_VERSION"
+	CapiCoreCurrentVersion          = "CAPI_CORE_CURRENT_VERSION"
 	K3sCapiCurrentVersion           = "K3S_CAPI_CURRENT_VERSION"
 )
 
