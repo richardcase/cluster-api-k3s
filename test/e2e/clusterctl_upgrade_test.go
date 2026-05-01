@@ -27,7 +27,7 @@ import (
 	. "github.com/onsi/gomega/gstruct"
 
 	"k8s.io/utils/ptr"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	clusterv1beta1 "sigs.k8s.io/cluster-api/api/core/v1beta1"
 	capi_e2e "sigs.k8s.io/cluster-api/test/e2e"
 	"sigs.k8s.io/cluster-api/test/framework"
 	"sigs.k8s.io/cluster-api/util/patch"
@@ -60,14 +60,14 @@ var _ = Describe("When testing clusterctl upgrades using ClusterClass (v0.2.0=>c
 	BeforeEach(func() {
 		Expect(e2eConfig.Variables).To(HaveKey(K3sCapiCurrentVersion))
 		Expect(e2eConfig.Variables).To(HaveKey(CapiCoreVersion))
+		Expect(e2eConfig.Variables).To(HaveKey(CapiCoreCurrentVersion))
 
 		// Will upgrade k3s CAPI from v0.2.0 to k3sCapiUpgradedVersion.
 		k3sCapiUpgradedVersion = e2eConfig.GetVariableOrEmpty(K3sCapiCurrentVersion)
 
-		// Will init other CAPI core/CAPD componenets with CapiCoreVersion, and then upgrade to CapiCoreUpgradedVersion.
-		// For now, this two versions are equal.
+		// Will init CAPI core/CAPD with CapiCoreVersion, then upgrade to CapiCoreUpgradedVersion.
 		capiCoreVersion = e2eConfig.GetVariableOrEmpty(CapiCoreVersion)
-		capiCoreUpgradedVersion = capiCoreVersion
+		capiCoreUpgradedVersion = e2eConfig.GetVariableOrEmpty(CapiCoreCurrentVersion)
 	})
 
 	capi_e2e.ClusterctlUpgradeSpec(ctx, func() capi_e2e.ClusterctlUpgradeSpecInput {
@@ -83,7 +83,6 @@ var _ = Describe("When testing clusterctl upgrades using ClusterClass (v0.2.0=>c
 			InitWithBootstrapProviders:      []string{fmt.Sprintf(providerKThreesPrefix, version)},
 			InitWithControlPlaneProviders:   []string{fmt.Sprintf(providerKThreesPrefix, version)},
 			InitWithInfrastructureProviders: []string{fmt.Sprintf(providerDockerPrefix, capiCoreVersion)},
-			InitWithProvidersContract:       "v1beta1",
 			// InitWithKubernetesVersion is for the management cluster, WorkloadKubernetesVersion is for the workload cluster.
 			// Hardcoding the versions as later versions of k3s might not be compatible with the older versions of CAPI k3s.
 			InitWithKubernetesVersion:   "v1.30.0",
@@ -91,6 +90,7 @@ var _ = Describe("When testing clusterctl upgrades using ClusterClass (v0.2.0=>c
 			MgmtFlavor:                  "topology",
 			WorkloadFlavor:              "topology",
 			UseKindForManagementCluster: true,
+			InitWithProvidersContract:   "v1beta1",
 			// Configuration for the provider upgrades.
 			Upgrades: []capi_e2e.ClusterctlUpgradeSpecInputUpgrade{
 				{
@@ -108,7 +108,7 @@ var _ = Describe("When testing clusterctl upgrades using ClusterClass (v0.2.0=>c
 			// We are testing upgrading from v0.2.0 as we do not support SSA
 			// before v0.2.0.
 			PostUpgrade: func(managementClusterProxy framework.ClusterProxy, clusterNamespace, clusterName string) {
-				clusterList := &clusterv1.ClusterList{}
+				clusterList := &clusterv1beta1.ClusterList{}
 				mgmtClient := managementClusterProxy.GetClient()
 
 				if err := mgmtClient.List(ctx, clusterList, client.InNamespace(clusterNamespace)); err != nil {
@@ -120,10 +120,10 @@ var _ = Describe("When testing clusterctl upgrades using ClusterClass (v0.2.0=>c
 
 				Byf("Waiting the new controller to reconcile at least once, to set the managed fields with k3s kcpManagerName for all control plane machines.")
 				Eventually(func(g Gomega) {
-					controlPlaneMachineList := &clusterv1.MachineList{}
+					controlPlaneMachineList := &clusterv1beta1.MachineList{}
 					g.Expect(mgmtClient.List(ctx, controlPlaneMachineList, client.InNamespace(clusterNamespace), client.MatchingLabels{
-						clusterv1.MachineControlPlaneLabel: "",
-						clusterv1.ClusterNameLabel:         cluster.Name,
+						clusterv1beta1.MachineControlPlaneLabel: "",
+						clusterv1beta1.ClusterNameLabel:         cluster.Name,
 					})).To(Succeed())
 					for _, m := range controlPlaneMachineList.Items {
 						g.Expect(m.ObjectMeta.ManagedFields).To(ContainElement(MatchFields(IgnoreExtras, Fields{
@@ -148,10 +148,10 @@ var _ = Describe("When testing clusterctl upgrades using ClusterClass (v0.2.0=>c
 
 				Byf("Waiting for labels and annotations of all controlplane machines to be updated.")
 				Eventually(func(g Gomega) {
-					controlPlaneMachineList := &clusterv1.MachineList{}
+					controlPlaneMachineList := &clusterv1beta1.MachineList{}
 					g.Expect(mgmtClient.List(ctx, controlPlaneMachineList, client.InNamespace(clusterNamespace), client.MatchingLabels{
-						clusterv1.MachineControlPlaneLabel: "",
-						clusterv1.ClusterNameLabel:         cluster.Name,
+						clusterv1beta1.MachineControlPlaneLabel: "",
+						clusterv1beta1.ClusterNameLabel:         cluster.Name,
 					})).To(Succeed())
 					for _, m := range controlPlaneMachineList.Items {
 						g.Expect(m.ObjectMeta.Labels).NotTo(HaveKey(e2eOldLabelName))
